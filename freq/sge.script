@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+#$ -cwd			
+#$ -j n			
+#$ -S /bin/bash		
+#$ -N  geoopt-vasp
+#$ -pe make28 28
+#$ -q cluster5.q
+
+source /home2/shang/.bashrc
+name=`hostname`
+case $name in
+        cluster | compute-0-0 | compute-0-1 | compute-0-2 | compute-0-3 | compute-0-4 | compute-0-5 | compute-0-6 | compute-0-7 | compute-0-8)
+        export mpienv="--rsh=ssh -genv I_MPI_FABRICS shm:dapl -genv I_MPI_DAPL_PROVIDER ofa-v2-mlx4_0-1"
+        ;;
+        cluster2.local | cluster2.hpc.org | compute-1-1.local | compute-1-2.local | compute-1-3.local | compute-1-4.local | compute-1-5.local | compute-1-6.local | compute-1-7.local | compute-1-8.local | compute-1-9.local | compute-1-1 | compute-1-2 )
+        export mpienv="--rsh=ssh -env I_MPI_DEVICE rdssm:ofa-v2-ib0  -env I_MPI_DEBUG 5"
+        ;;
+esac
+echo $JOB_ID > xx
+#cat `echo $PE_HOSTFILE` |cut -d " " -f -2>>nodefile
+PEXEC=/home10/bin/vasp.5.4.4
+ln -s $PEXEC ./$JOB_ID
+mpirun $mpienv -np $NSLOTS ./$JOB_ID >output
+
+
+
